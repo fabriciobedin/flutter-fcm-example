@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contas/firebaseNotifications.dart';
-import 'package:flutter_contas/provider/paymentController.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_contas/mobx/paymentCtrlMobX.dart' as MobX;
+import 'package:flutter_contas/model/payment.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:get_it/get_it.dart';
 
 class ListAccountsPage extends StatelessWidget {
+  MobX.PaymentController paymentController;
+  ListAccountsPage(){
+    paymentController = GetIt.I.get<MobX.PaymentController>();
+  }
   @override
   Widget build(BuildContext context) {
-    new FirebaseNotifications(context).setUpFirebase();
+    new FirebaseNotifications().setUpFirebase();
 
     return Scaffold(
       appBar: AppBar(
         title: Text("Contas a pagar"),
       ),
-      body: Consumer<PaymentController>(builder: (context, controller, child) {
-        return controller.items.length == 0
+      body: Observer(builder: (_) {
+        return paymentController.payments.length == 0
             ? Container(
                 padding: EdgeInsets.all(20),
                 child: Text(
@@ -26,7 +32,7 @@ class ListAccountsPage extends StatelessWidget {
                   getColumn('Local'),
                   getColumn('Valor')
                 ],
-                rows: getRows(controller),
+                rows: getRows(paymentController),
               );
       }),
     );
@@ -39,10 +45,11 @@ class ListAccountsPage extends StatelessWidget {
         ),
       );
 
-  List<DataRow> getRows(PaymentController controller) {
+  List<DataRow> getRows(MobX.PaymentController paymentController) {
     List<DataRow> rows = List();
 
-    controller.items.forEach((element) {
+    for (int indice = 0; indice < paymentController.payments.length; indice++) {
+      Payment element = paymentController.payments[indice];
       rows.add(DataRow(
         selected: element.selected,
         cells: <DataCell>[
@@ -51,11 +58,13 @@ class ListAccountsPage extends StatelessWidget {
           DataCell(Text("${element.value}")),
         ],
         onSelectChanged: (value) {
+          // utilizado desta forma pq no mobx não dá pra utilizar passagem de parametro por referência
           element.selected = value;
-          controller.update();
+          paymentController.update(indice, element);
         },
       ));
-    });
+    }
+    ;
     return rows;
   }
 }

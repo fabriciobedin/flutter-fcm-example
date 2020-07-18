@@ -1,19 +1,16 @@
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_contas/model/payment.dart';
-import 'package:flutter_contas/provider/paymentController.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_contas/mobx/paymentCtrlMobX.dart' as MobX;
+import 'package:get_it/get_it.dart';
 
 class FirebaseNotifications {
   FirebaseMessaging _firebaseMessaging;
-  final BuildContext context;
-  PaymentController controller;
+  MobX.PaymentController paymentController;
 
-  FirebaseNotifications(this.context) {
-    // possui acesso ao change notifier (PaymentController) porém apenas pra inserir uma mudança
-    controller = Provider.of<PaymentController>(context, listen: false);
+  FirebaseNotifications() {
+    paymentController = GetIt.I.get<MobX.PaymentController>();
   }
 
   void setUpFirebase() {
@@ -34,7 +31,7 @@ class FirebaseNotifications {
         print("on message $message");
         Payment payment = Payment.fromJson(message);
         // enviamos pro changenotifier o novo pagamento, ele faz a comunicação com o restante do fluxo
-        controller.add(payment);
+        paymentController.add(payment);
       },
       onResume: (Map<String, dynamic> message) async {},
       onLaunch: (Map<String, dynamic> message) async {},

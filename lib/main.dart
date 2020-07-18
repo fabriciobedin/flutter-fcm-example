@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contas/listAccounts.dart';
-import 'package:flutter_contas/provider/paymentController.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_contas/mobx/paymentCtrlMobX.dart' as MobX;
+
+import 'package:get_it/get_it.dart';
 
 void main() {
-  runApp(MyApp());
+ GetIt getIt = GetIt.I;
+ getIt.registerSingleton<MobX.PaymentController>(MobX.PaymentController());
+ runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -17,11 +19,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-       home: ChangeNotifierProvider(
-        create: (context) => PaymentController(),
-        child: ListAccountsPage(), //ListAccounts tornase um consumer de PaymentController
-      ),
-
+      home: ListAccountsPage(),
     );
   }
 }
